@@ -12,8 +12,10 @@ import {
   ChevronDown 
 } from "lucide-react";
 
+const STAGE_COUNT = 7;
+
 interface ScrollyOverlayProps {
-  activeStage: number;
+  onScrollUpdate?: (progress: number) => void;
 }
 
 interface StageDetail {
@@ -84,16 +86,63 @@ const STAGE_DETAILS: StageDetail[] = [
   }
 ];
 
-export default function ScrollyOverlay({ activeStage }: ScrollyOverlayProps) {
+export default function ScrollyOverlay({ onScrollUpdate }: ScrollyOverlayProps) {
+  const [activeStage, setActiveStage] = useState(0);
   const currentDetails = STAGE_DETAILS[activeStage] || STAGE_DETAILS[0];
   const IconComponent = currentDetails.icon;
 
-  // Telemetry status variables
   const [telemetryNodes, setTelemetryNodes] = useState(148041);
   const [systemSync, setSystemSync] = useState(82.4);
 
   useEffect(() => {
-    // Generate organic cyber fluctuation
+    const scrollyEl = document.getElementById("scrolly-sections");
+    if (!scrollyEl) return;
+
+    const sections = Array.from(scrollyEl.children) as HTMLElement[];
+
+    const updateProgress = () => {
+      const total = scrollyEl.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, -scrollyEl.getBoundingClientRect().top);
+      const progress = total > 0 ? Math.min(scrolled / total, 1) : 0;
+      onScrollUpdate?.(progress);
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let bestStage = -1;
+        let bestRatio = 0;
+
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const idx = sections.indexOf(entry.target as HTMLElement);
+          if (idx < 0) continue;
+          if (entry.intersectionRatio >= bestRatio) {
+            bestRatio = entry.intersectionRatio;
+            bestStage = idx;
+          }
+        }
+
+        if (bestStage >= 0) {
+          setActiveStage(bestStage);
+          updateProgress();
+        }
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("resize", updateProgress);
+    };
+  }, [onScrollUpdate]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setTelemetryNodes(prev => prev + Math.floor(Math.random() * 5) - 2);
       setSystemSync(prev => {
