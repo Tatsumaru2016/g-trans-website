@@ -89,19 +89,26 @@ function CameraScroller({ scrollProgress, scrollVelocity, setActiveStage }: Omit
 export default function DeepSpaceCanvas({ scrollProgress, scrollVelocity, activeStage, setActiveStage }: DeepSpaceCanvasProps) {
   
   useEffect(() => {
-    // Setup ScrollTrigger to bind HTML scroll status to mutable refs
+    const scrollyEl = document.getElementById("scrolly-sections");
+    if (!scrollyEl) return;
+
     const trigger = ScrollTrigger.create({
-      trigger: "#scrolly-sections",
+      trigger: scrollyEl,
       start: "top top",
       end: "bottom bottom",
-      scrub: 1.2, // smoothing scroll lag
+      scrub: 1.2,
       onUpdate: (self) => {
         scrollProgress.current = self.progress;
         scrollVelocity.current = self.getVelocity() / 3500;
-      }
+      },
     });
 
+    const refresh = () => ScrollTrigger.refresh();
+    requestAnimationFrame(refresh);
+    window.addEventListener("resize", refresh);
+
     return () => {
+      window.removeEventListener("resize", refresh);
       trigger.kill();
     };
   }, [scrollProgress, scrollVelocity]);

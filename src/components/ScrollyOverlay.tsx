@@ -105,25 +105,7 @@ export default function ScrollyOverlay({ activeStage }: ScrollyOverlayProps) {
   }, []);
 
   return (
-    <div className="absolute top-0 left-0 w-full text-white pointer-events-none">
-      
-      {/* ========================================================
-          700vh SCROLL SPAN TRIGGERS (These drive standard web scrolling)
-          ======================================================== */}
-      <div id="scrolly-sections" className="w-full relative pointer-events-auto">
-        <div className="h-[100vh]" /> {/* Trigger 1 */}
-        <div className="h-[100vh]" /> {/* Trigger 2 */}
-        <div className="h-[100vh]" /> {/* Trigger 3 */}
-        <div className="h-[100vh]" /> {/* Trigger 4 */}
-        <div className="h-[100vh]" /> {/* Trigger 5 */}
-        <div className="h-[100vh]" /> {/* Trigger 6 */}
-        <div className="h-[100vh]" /> {/* Trigger 7 */}
-      </div>
-
-      {/* ========================================================
-          FIXED COCKPIT HUD (Sits on top of the 3D Canvas)
-          ======================================================== */}
-      <div className="fixed inset-0 w-screen h-screen pointer-events-none flex flex-col justify-between p-6 md:p-8 select-none z-10">
+    <div className="fixed inset-0 w-screen h-screen text-white pointer-events-none flex flex-col justify-between p-6 md:p-8 select-none z-10">
         
         {/* HUD Top bar */}
         <div className="flex justify-between items-start pointer-events-auto">
@@ -265,8 +247,6 @@ export default function ScrollyOverlay({ activeStage }: ScrollyOverlayProps) {
 
           <span>TIME: {new Date().toISOString().substring(11, 19)} UTC</span>
         </div>
-
-      </div>
     </div>
   );
 }

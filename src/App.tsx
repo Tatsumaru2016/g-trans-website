@@ -13,13 +13,21 @@ export default function App() {
   const scrollVelocity = useRef<number>(0);
 
   return (
-    <main className="relative min-h-screen bg-space-black text-gray-100 selection:bg-cyan-500/30 selection:text-white">
+    <main className="relative bg-space-black text-gray-100 selection:bg-cyan-500/30 selection:text-white">
       <DeepSpaceCanvas 
         scrollProgress={scrollProgress} 
         scrollVelocity={scrollVelocity}
         activeStage={activeStage}
         setActiveStage={setActiveStage}
       />
+
+      {/* 700vh scroll span — must stay in document flow (not absolute/fixed) */}
+      <div id="scrolly-sections" className="relative w-full">
+        {Array.from({ length: 7 }).map((_, i) => (
+          <div key={i} className="h-screen" aria-hidden="true" />
+        ))}
+      </div>
+
       <ScrollyOverlay activeStage={activeStage} />
     </main>
   );
