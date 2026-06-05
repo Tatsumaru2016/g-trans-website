@@ -1,0 +1,6 @@
+{
+  "name": "G.trans scrollytelling",
+  "description": "An immersive 3D vertical scrollytelling promotional website for G.trans translation tool, featuring custom GLSL shaders, interactive starfields, and space-based dynamic animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
