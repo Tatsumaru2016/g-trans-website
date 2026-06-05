@@ -13,58 +13,43 @@ export default function App() {
   const [activeStage, setActiveStage] = useState(0);
   const scrollProgress = useRef<number>(0);
   const scrollVelocity = useRef<number>(0);
+  const lastScrollY = useRef(0);
+  const lastStage = useRef(0);
 
   useEffect(() => {
-    const bindScroll = () => {
-      const scrollyEl = document.getElementById("scrolly-sections");
-      if (!scrollyEl) return null;
+    const scrollyEl = document.getElementById("scrolly-sections");
+    if (!scrollyEl) return;
 
-      let lastY = window.scrollY;
-      let lastTime = performance.now();
+    let frame = 0;
 
-      const updateScroll = () => {
-        const total = scrollyEl.offsetHeight - window.innerHeight;
-        const scrolled = Math.max(0, -scrollyEl.getBoundingClientRect().top);
-        const progress = total > 0 ? Math.min(scrolled / total, 1) : 0;
+    const tick = () => {
+      const total = scrollyEl.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, -scrollyEl.getBoundingClientRect().top);
+      const progress = total > 0 ? Math.min(scrolled / total, 1) : 0;
 
-        scrollProgress.current = progress;
-        setActiveStage(Math.min(Math.floor(progress * STAGE_COUNT), STAGE_COUNT - 1));
+      scrollProgress.current = progress;
+      scrollVelocity.current = window.scrollY - lastScrollY.current;
+      lastScrollY.current = window.scrollY;
 
-        const now = performance.now();
-        const dt = now - lastTime;
-        if (dt > 0) {
-          scrollVelocity.current = ((window.scrollY - lastY) / dt) * 1000 / 3500;
-        }
-        lastY = window.scrollY;
-        lastTime = now;
-      };
+      const stage = Math.min(Math.floor(progress * STAGE_COUNT), STAGE_COUNT - 1);
+      if (stage !== lastStage.current) {
+        lastStage.current = stage;
+        setActiveStage(stage);
+      }
 
-      window.addEventListener("scroll", updateScroll, { passive: true });
-      window.addEventListener("resize", updateScroll);
-      updateScroll();
-
-      return () => {
-        window.removeEventListener("scroll", updateScroll);
-        window.removeEventListener("resize", updateScroll);
-      };
+      frame = requestAnimationFrame(tick);
     };
 
-    let cleanup = bindScroll();
-    if (!cleanup) {
-      const frame = requestAnimationFrame(() => {
-        cleanup = bindScroll();
-      });
-      return () => {
-        cancelAnimationFrame(frame);
-        cleanup?.();
-      };
-    }
+    frame = requestAnimationFrame(tick);
 
-    return cleanup;
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (
-    <main className="relative bg-space-black text-gray-100 selection:bg-cyan-500/30 selection:text-white">
+    <main
+      className="relative bg-space-black text-gray-100 selection:bg-cyan-500/30 selection:text-white"
+      data-active-stage={activeStage}
+    >
       <DeepSpaceCanvas 
         scrollProgress={scrollProgress} 
         scrollVelocity={scrollVelocity}
