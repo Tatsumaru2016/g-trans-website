@@ -108,7 +108,7 @@ export default function ScrollyOverlay({ activeStage }: ScrollyOverlayProps) {
     <div className="fixed inset-0 w-screen h-screen text-white pointer-events-none flex flex-col justify-between p-6 md:p-8 select-none z-10">
         
         {/* HUD Top bar */}
-        <div className="flex justify-between items-start pointer-events-auto">
+        <div className="flex justify-between items-start">
           {/* Logo & title */}
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export default function ScrollyOverlay({ activeStage }: ScrollyOverlayProps) {
         </div>
 
         {/* HUD Middle Area: Scrolly stories container */}
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 w-full max-w-7xl mx-auto mb-6 md:mb-12 pointer-events-auto">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 w-full max-w-7xl mx-auto mb-6 md:mb-12">
           
           {/* Dynamic Story Display */}
           <div className="w-full md:w-[480px]">
