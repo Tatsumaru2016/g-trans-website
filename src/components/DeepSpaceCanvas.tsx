@@ -92,24 +92,31 @@ export default function DeepSpaceCanvas({ scrollProgress, scrollVelocity, active
     const scrollyEl = document.getElementById("scrolly-sections");
     if (!scrollyEl) return;
 
-    const trigger = ScrollTrigger.create({
-      trigger: scrollyEl,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 1.2,
-      onUpdate: (self) => {
-        scrollProgress.current = self.progress;
-        scrollVelocity.current = self.getVelocity() / 3500;
-      },
-    });
+    let lastY = window.scrollY;
+    let lastTime = performance.now();
 
-    const refresh = () => ScrollTrigger.refresh();
-    requestAnimationFrame(refresh);
-    window.addEventListener("resize", refresh);
+    const updateScroll = () => {
+      const total = scrollyEl.offsetHeight - window.innerHeight;
+      const scrolled = Math.max(0, -scrollyEl.getBoundingClientRect().top);
+      scrollProgress.current = total > 0 ? Math.min(scrolled / total, 1) : 0;
+
+      const now = performance.now();
+      const dt = now - lastTime;
+      if (dt > 0) {
+        scrollVelocity.current = ((window.scrollY - lastY) / dt) * 1000 / 3500;
+      }
+      lastY = window.scrollY;
+      lastTime = now;
+    };
+
+    window.addEventListener("scroll", updateScroll, { passive: true });
+    window.addEventListener("resize", updateScroll);
+    updateScroll();
+    requestAnimationFrame(() => ScrollTrigger.refresh());
 
     return () => {
-      window.removeEventListener("resize", refresh);
-      trigger.kill();
+      window.removeEventListener("scroll", updateScroll);
+      window.removeEventListener("resize", updateScroll);
     };
   }, [scrollProgress, scrollVelocity]);
 
