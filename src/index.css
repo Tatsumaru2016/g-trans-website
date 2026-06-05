@@ -69,12 +69,4 @@ html, body {
   50% { height: 40px; opacity: 1; }
 }
 
-@keyframes boot-progress {
-  from { width: 0%; }
-  to { width: 100%; }
-}
-
-.boot-progress-bar {
-  animation: boot-progress 1.4s ease-out forwards;
-}
 
