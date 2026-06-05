@@ -20,21 +20,33 @@ export default function App() {
   const scrollVelocity = useRef<number>(0);
 
   useEffect(() => {
-    // Elegant system initialization boot counter
-    const interval = setInterval(() => {
-      setLoadPercentage((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => setLoading(false), 300);
-          return 100;
-        }
-        // Random incremental increments
-        const increment = Math.floor(Math.random() * 12) + 6;
-        return Math.min(prev + increment, 100);
-      });
-    }, 45);
+    let cancelled = false;
+    let timeoutId = 0;
+    let progress = 0;
 
-    return () => clearInterval(interval);
+    const tick = () => {
+      if (cancelled) return;
+
+      if (progress >= 100) {
+        setLoadPercentage(100);
+        timeoutId = window.setTimeout(() => {
+          if (!cancelled) setLoading(false);
+        }, 300);
+        return;
+      }
+
+      const increment = Math.floor(Math.random() * 12) + 6;
+      progress = Math.min(progress + increment, 100);
+      setLoadPercentage(progress);
+      timeoutId = window.setTimeout(tick, 45);
+    };
+
+    timeoutId = window.setTimeout(tick, 45);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, []);
 
   return (
@@ -106,13 +118,15 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 2. Primary 3D WebGL deep space Canvas */}
-      <DeepSpaceCanvas 
-        scrollProgress={scrollProgress} 
-        scrollVelocity={scrollVelocity}
-        activeStage={activeStage}
-        setActiveStage={setActiveStage}
-      />
+      {/* 2. Primary 3D WebGL deep space Canvas — mount after boot to avoid render thrashing */}
+      {!loading && (
+        <DeepSpaceCanvas 
+          scrollProgress={scrollProgress} 
+          scrollVelocity={scrollVelocity}
+          activeStage={activeStage}
+          setActiveStage={setActiveStage}
+        />
+      )}
 
       {/* 3. Immersive fixed HUD scrolly screen overlay */}
       {!loading && (

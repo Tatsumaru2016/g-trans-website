@@ -29,13 +29,17 @@ function CameraScroller({ scrollProgress, scrollVelocity, setActiveStage }: Omit
   const currentLookAt = useMemo(() => new THREE.Vector3(0, 0, 15), []);
   const lookAtTarget = useMemo(() => new THREE.Vector3(0, 0, 15), []);
   const cameraTargetPos = useMemo(() => new THREE.Vector3(0, 0, 35), []);
+  const lastStage = useRef(-1);
 
   useFrame((state) => {
     const p = scrollProgress.current;
     
     // 1. Calculate active stage for HTML text sync
     const calculatedStage = THREE.MathUtils.clamp(Math.floor(p * 7), 0, 6);
-    setActiveStage(calculatedStage);
+    if (calculatedStage !== lastStage.current) {
+      lastStage.current = calculatedStage;
+      setActiveStage(calculatedStage);
+    }
 
     // 2. Camera position path calculation
     if (p < 0.82) {
