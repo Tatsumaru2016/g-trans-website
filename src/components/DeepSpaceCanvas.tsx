@@ -1,8 +1,6 @@
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useRef, useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import * as THREE from "three";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import Starfield from "./Starfield";
 import EarthNode from "./EarthNode";
@@ -13,35 +11,22 @@ import PlanetarySystem from "./PlanetarySystem";
 import InfiniteCosmicWeb from "./InfiniteCosmicWeb";
 import TorusRing from "./TorusRing";
 
-// Register GSAP ScrollTrigger
-gsap.registerPlugin(ScrollTrigger);
-
 interface DeepSpaceCanvasProps {
   scrollProgress: React.MutableRefObject<number>;
   scrollVelocity: React.MutableRefObject<number>;
-  activeStage: number;
-  setActiveStage: (stage: number) => void;
 }
 
 // Inner camera controller that listens to the scroll progresses
-function CameraScroller({ scrollProgress, scrollVelocity, setActiveStage }: Omit<DeepSpaceCanvasProps, "activeStage">) {
+function CameraScroller({ scrollProgress }: Pick<DeepSpaceCanvasProps, "scrollProgress">) {
   // Vectors for smooth interpolation (lerping)
   const currentLookAt = useMemo(() => new THREE.Vector3(0, 0, 15), []);
   const lookAtTarget = useMemo(() => new THREE.Vector3(0, 0, 15), []);
   const cameraTargetPos = useMemo(() => new THREE.Vector3(0, 0, 35), []);
-  const lastStage = useRef(-1);
 
   useFrame((state) => {
     const p = scrollProgress.current;
-    
-    // 1. Calculate active stage for HTML text sync
-    const calculatedStage = THREE.MathUtils.clamp(Math.floor(p * 7), 0, 6);
-    if (calculatedStage !== lastStage.current) {
-      lastStage.current = calculatedStage;
-      setActiveStage(calculatedStage);
-    }
 
-    // 2. Camera position path calculation
+    // Camera position path calculation
     if (p < 0.82) {
       // Normal progression through scenes 1 to 6
       const targetZ = 35 - p * 240; // Goes from Z = 35 down to -162
@@ -86,40 +71,7 @@ function CameraScroller({ scrollProgress, scrollVelocity, setActiveStage }: Omit
   return null;
 }
 
-export default function DeepSpaceCanvas({ scrollProgress, scrollVelocity, activeStage, setActiveStage }: DeepSpaceCanvasProps) {
-  
-  useEffect(() => {
-    const scrollyEl = document.getElementById("scrolly-sections");
-    if (!scrollyEl) return;
-
-    let lastY = window.scrollY;
-    let lastTime = performance.now();
-
-    const updateScroll = () => {
-      const total = scrollyEl.offsetHeight - window.innerHeight;
-      const scrolled = Math.max(0, -scrollyEl.getBoundingClientRect().top);
-      scrollProgress.current = total > 0 ? Math.min(scrolled / total, 1) : 0;
-
-      const now = performance.now();
-      const dt = now - lastTime;
-      if (dt > 0) {
-        scrollVelocity.current = ((window.scrollY - lastY) / dt) * 1000 / 3500;
-      }
-      lastY = window.scrollY;
-      lastTime = now;
-    };
-
-    window.addEventListener("scroll", updateScroll, { passive: true });
-    window.addEventListener("resize", updateScroll);
-    updateScroll();
-    requestAnimationFrame(() => ScrollTrigger.refresh());
-
-    return () => {
-      window.removeEventListener("scroll", updateScroll);
-      window.removeEventListener("resize", updateScroll);
-    };
-  }, [scrollProgress, scrollVelocity]);
-
+export default function DeepSpaceCanvas({ scrollProgress, scrollVelocity }: DeepSpaceCanvasProps) {
   return (
     <div className="fixed top-0 left-0 w-screen h-screen -z-10 bg-space-black overflow-hidden">
       {/* Cinematic grid lines in background */}
@@ -177,11 +129,7 @@ export default function DeepSpaceCanvas({ scrollProgress, scrollVelocity, active
         </group>
 
         {/* R3F camera controller */}
-        <CameraScroller 
-          scrollProgress={scrollProgress} 
-          scrollVelocity={scrollVelocity}
-          setActiveStage={setActiveStage}
-        />
+        <CameraScroller scrollProgress={scrollProgress} />
       </Canvas>
     </div>
   );
