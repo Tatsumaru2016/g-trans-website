@@ -3,37 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useRef, useCallback } from "react";
 import DeepSpaceCanvas from "./components/DeepSpaceCanvas";
 import ScrollyOverlay from "./components/ScrollyOverlay";
+import { useScrollyProgress } from "./hooks/useScrollyProgress";
 
 const STAGE_COUNT = 7;
 
 export default function App() {
-  const scrollProgress = useRef<number>(0);
-  const scrollVelocity = useRef<number>(0);
-  const lastScrollY = useRef(0);
-
-  const handleScrollUpdate = useCallback((progress: number) => {
-    scrollProgress.current = progress;
-    scrollVelocity.current = window.scrollY - lastScrollY.current;
-    lastScrollY.current = window.scrollY;
-  }, []);
+  const { scrollyRef, activeStage, progressRef, velocityRef } =
+    useScrollyProgress(STAGE_COUNT);
 
   return (
-    <main className="relative bg-space-black text-gray-100 selection:bg-cyan-500/30 selection:text-white">
-      <div id="scrolly-sections" className="relative w-full">
+    <main
+      className="relative bg-space-black text-gray-100 selection:bg-cyan-500/30 selection:text-white"
+      data-active-stage={activeStage}
+    >
+      <div id="scrolly-sections" ref={scrollyRef} className="relative w-full">
         {Array.from({ length: STAGE_COUNT }).map((_, i) => (
           <div key={i} className="h-screen" aria-hidden="true" />
         ))}
       </div>
 
-      <DeepSpaceCanvas 
-        scrollProgress={scrollProgress} 
-        scrollVelocity={scrollVelocity}
-      />
+      <DeepSpaceCanvas scrollProgress={progressRef} scrollVelocity={velocityRef} />
 
-      <ScrollyOverlay onScrollUpdate={handleScrollUpdate} />
+      <ScrollyOverlay activeStage={activeStage} />
     </main>
   );
 }
